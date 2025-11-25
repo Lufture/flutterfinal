@@ -1,0 +1,19 @@
+// lib/modules/pagos/pagos_controller.dart
+import 'package:get/get.dart';
+import '../../data/repositories/membresia_repository.dart';
+import '../../app/services/payments/mercado_pago_service.dart';
+import '../../app/routes/app_routes.dart';
+import '../auth/auth_controller.dart';
+
+class PagosController extends GetxController {
+  final MembresiaRepository _repo = Get.find();
+  final MercadoPagoService _mp = Get.find();
+
+  Future<void> iniciarPago(String plan) async {
+    final uid = Get.find<AuthController>().user.value!.uid;
+    final pref = await _mp.createPreference(plan);
+    await _mp.openCheckout(pref);
+    await _repo.setMembresia(uid, plan, provider: 'mercadopago', providerSubscriptionId: pref.id);
+    Get.offNamed(AppRoutes.confirmacionPago);
+  }
+}
