@@ -1,28 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'app/routes/app_pages.dart';
-import 'app/bindings/initial_bindings.dart';
-import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'app/theme/app_theme.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:provider/provider.dart';
+import 'ui/screens/splash_screen.dart';
+import 'providers/auth_provider.dart';
+import 'providers/tutor_provider.dart';
+import 'services/notification_service.dart';
+import 'config/theme.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  InitialBindings().dependencies();
-  runApp(const TutorU());
+  await Firebase.initializeApp();
+  await NotificationService().initNotifications();
+
+  // TODO: Pon aquí tu Publishable Key de Stripe
+  Stripe.publishableKey = 'pk_test_tus_claves_aqui';
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => TutorProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
-class TutorU extends StatelessWidget {
-  const TutorU({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'TutorU',
+    return MaterialApp(
+      title: 'TutorConnect',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      initialRoute: AppRoutes.onboarding,
-      getPages: AppPages.pages,
+      theme: AppTheme.theme,
+      home: const SplashScreen(),
     );
   }
 }
